@@ -1,16 +1,22 @@
 all: nira
 
-nira: Nira.tab.c lex.yy.c
-	gcc -g -o nira Nira.tab.c lex.yy.c
+nira: Nira.tab.o lex.yy.o
+	g++ -g -o nira Nira.tab.o lex.yy.o
 
-Nira.tab.c: Nira.y
-	bison -dv Nira.y
+lex.yy.o: lex.yy.c
+	g++ -g -o lex.yy.o -c lex.yy.c
+
+Nira.tab.o: Nira.tab.cc
+	g++ -g -o Nira.tab.o -c Nira.tab.cc
+
+Nira.tab.cc: Nira.yy
+	bison -dv Nira.yy
 
 lex.yy.c: Nira.l
 	flex Nira.l
 
 clean:
-	rm -f lex.yy.c Nira.tab.c Nira.output Nira.tab.h nira
+	rm -f lex.yy.cc lex.yy.o Nira.tab.cc Nira.output Nira.tab.hh nira Nira.tab.o lex.yy.c
 
 .PHONY: all clean
 
