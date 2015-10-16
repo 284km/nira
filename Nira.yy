@@ -22,6 +22,7 @@ typedef enum {
     OP_PUSH_FALSE,
     OP_PUSH_IDENTIFIER,
     OP_FUNCALL,
+    OP_PUSH_STRING,
 } OP_TYPE;
 
 typedef struct {
@@ -157,6 +158,12 @@ public:
                 stack.push_back(v);
                 break;
             }
+            case OP_PUSH_STRING: {
+                Value *v = new Value;
+                v->set_str(op->operand.str_value);
+                stack.push_back(v);
+                break;
+            }
             case OP_ADD: {
                 Value *v1 = stack.back();
                 stack.pop_back();
@@ -197,7 +204,7 @@ public:
                     printf("%s\n", s->value.str_value);
                     s->release();
                 } else {
-                    fprintf(stderr, "Unknown function: %s\n");
+                    fprintf(stderr, "Unknown function: %s\n", funname->value.str_value);
                 }
                 dump_stack();
                 break;
@@ -250,8 +257,9 @@ VM vm;
 %token <str_value> IDENTIFIER;
 %token ADD SUB MUL DIV CR
 %token TRUE FALSE
+%token <str_value> STRING_LITERAL
 %type <int_value> expression term primary_expression
-%type <str_value> identifier
+%type <str_value> identifier string
 
 %%
 
@@ -340,6 +348,7 @@ primary_expression
         tmp->op_type = OP_PUSH_TRUE;
         vm.ops.push_back(tmp);
     }
+    | string
     ;
 
 identifier
@@ -352,6 +361,16 @@ identifier
         vm.ops.push_back(tmp);
     }
     ;
+
+string
+    : STRING_LITERAL
+    {
+        printf("STRING in parser\n");
+        OP *tmp = new OP;
+        tmp->op_type = OP_PUSH_STRING;
+        tmp->operand.str_value = $1;
+        vm.ops.push_back(tmp);
+    }
 
 %%
 int yyerror(const char *err) {
