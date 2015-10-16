@@ -135,7 +135,7 @@ public:
 
     // run program
     void execute() {
-        printf("[DEBUG] OPS: %d, %ld\n", pc, ops.size());
+        // printf("[DEBUG] OPS: %d, %ld\n", pc, ops.size());
         while (pc < ops.size()) {
             OP *op = ops[pc];
             switch (op->op_type) {
@@ -186,11 +186,11 @@ public:
                 break;
             }
             case OP_FUNCALL: {
-                printf("OP_FUNCALL with %ld\n", stack.size());
+                // printf("OP_FUNCALL with %ld\n", stack.size());
                 assert(stack.size() >= op->operand.int_value + 1);
                 Value *funname = stack.at(stack.size()-op->operand.int_value-1);
                 assert(funname->value_type == VALUE_TYPE_STR);
-                funname->dump();
+                // funname->dump();
                 if (strcmp(funname->value.str_value, "print") == 0) {
                     Value *v = stack.back();
                     stack.pop_back();
@@ -206,16 +206,16 @@ public:
                 } else {
                     fprintf(stderr, "Unknown function: %s\n", funname->value.str_value);
                 }
-                dump_stack();
+                // dump_stack();
                 break;
             }
             case OP_PUSH_IDENTIFIER: {
                 // operand = the number of args
-                printf("OP_PUSH_IDENTIFIER\n");
+                // printf("OP_PUSH_IDENTIFIER\n");
                 Value *v = new Value;
                 v->value.str_value = op->operand.str_value;
                 v->value_type = VALUE_TYPE_STR;
-                v->dump();
+                // v->dump();
                 stack.push_back(v);
                 break;
             }
@@ -259,7 +259,7 @@ VM vm;
 %token TRUE FALSE
 %token <str_value> STRING_LITERAL
 %type <int_value> expression term primary_expression
-%type <str_value> identifier string
+%type <str_value> identifier
 
 %%
 
@@ -286,7 +286,7 @@ line
         // TODO: support multiple args
         // TODO: support vargs
         // call function
-        printf("FUNCALL stmt in parser!\n");
+        // printf("FUNCALL stmt in parser!\n");
         OP * tmp = new OP;
         tmp->op_type = OP_FUNCALL;
         tmp->operand.int_value = 1; // the number of args
@@ -348,29 +348,25 @@ primary_expression
         tmp->op_type = OP_PUSH_TRUE;
         vm.ops.push_back(tmp);
     }
-    | string
-    ;
+    | STRING_LITERAL
+    {
+        OP *tmp = new OP;
+        tmp->op_type = OP_PUSH_STRING;
+        tmp->operand.str_value = $1;
+        vm.ops.push_back(tmp);
+    }
+   ;
 
 identifier
     : IDENTIFIER
     {
-        printf("IDENTIFIER in parser\n");
+        // printf("IDENTIFIER in parser\n");
         OP * tmp = new OP;
         tmp->op_type = OP_PUSH_IDENTIFIER;
         tmp->operand.str_value = $1;
         vm.ops.push_back(tmp);
     }
     ;
-
-string
-    : STRING_LITERAL
-    {
-        printf("STRING in parser\n");
-        OP *tmp = new OP;
-        tmp->op_type = OP_PUSH_STRING;
-        tmp->operand.str_value = $1;
-        vm.ops.push_back(tmp);
-    }
 
 %%
 int yyerror(const char *err) {

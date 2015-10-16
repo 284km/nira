@@ -18,5 +18,7 @@ lex.yy.c: Nira.l
 clean:
 	rm -f lex.yy.cc lex.yy.o Nira.tab.cc Nira.output Nira.tab.hh nira Nira.tab.o lex.yy.c
 
-.PHONY: all clean
+test: nira
+	prove t/
 
+.PHONY: all clean test
