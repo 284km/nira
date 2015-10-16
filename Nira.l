@@ -38,7 +38,7 @@ int yywrap(void)
 
 %}
 
-%start C_COMMENT CC_COMMENT STRING_LITERAL_STATE
+%start C_COMMENT CC_COMMENT STRING_LITERAL_STATE PERL_COMMENT
 
 %%
 
@@ -81,6 +81,16 @@ int yywrap(void)
     BEGIN STRING_LITERAL_STATE;
 }
 
+<INITIAL>"/*" {
+    BEGIN C_COMMENT;
+}
+<INITIAL>"//" {
+    BEGIN CC_COMMENT;
+}
+<INITIAL>"#" {
+    BEGIN PERL_COMMENT;
+}
+
 <C_COMMENT>\n     increment_line_number();
 <C_COMMENT>"*/"     {
     BEGIN INITIAL;
@@ -91,6 +101,11 @@ int yywrap(void)
     BEGIN INITIAL;
 }
 <CC_COMMENT>.   ;
+<PERL_COMMENT>\n  {
+    increment_line_number();
+    BEGIN INITIAL;
+}
+<PERL_COMMENT>.   ;
 
 <STRING_LITERAL_STATE>\"        {
     yylval.str_value = strdup(nira_close_string_literal());
